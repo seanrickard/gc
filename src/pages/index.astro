@@ -45,6 +45,27 @@
         padding: 1rem;
         border-radius: 12px;
       }
+      .countdown-clock {
+        margin-top: 1rem;
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        font-family: 'Courier New', monospace;
+        font-size: 1.5rem;
+        color: #fff;
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+      }
+      .countdown-unit {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        animation: pulse 2s infinite;
+      }
+      @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+      }
       @keyframes fadeIn {
         from { opacity: 0; transform: translateY(20px); }
         to { opacity: 1; transform: translateY(0); }
@@ -63,7 +84,7 @@
         <div class="playlist-container">
           <iframe 
             style="border-radius:12px" 
-            src="https://open.spotify.com/embed/playlist/5ZKaKLcHe2lVhMN5qKyhDJ" 
+            src="https://open.spotify.com/embed/playlist/YOUR_PLAYLIST_ID" 
             width="100%" 
             height="352" 
             frameborder="0" 
@@ -80,11 +101,11 @@
         <p>From "Hey Jude" to "Let It Be," they’re the soundtrack to our madness.</p>
       </section>
 
-      <!-- Kevin Countdown -->
+      <!-- Kevin Countdown Clock -->
       <section class="section">
         <h2>Kevin’s Big Day</h2>
         <p>July 13—Wedding bells are ringing!</p>
-        <div id="countdown" class="countdown"></div>
+        <div class="countdown-clock" id="countdown"></div>
       </section>
     </main>
 
@@ -96,15 +117,26 @@
         const now = new Date().getTime();
         const timeLeft = weddingDate - now;
 
+        if (timeLeft < 0) {
+          countdownEl.innerHTML = "Kevin’s married—let’s party!";
+          return;
+        }
+
         const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
         const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
         const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
 
-        countdownEl.innerHTML = `${days}d ${hours}h ${minutes}m until Kevin ties the knot!`;
+        countdownEl.innerHTML = `
+          <div class="countdown-unit">${days}d</div>
+          <div class="countdown-unit">${hours}h</div>
+          <div class="countdown-unit">${minutes}m</div>
+          <div class="countdown-unit">${seconds}s</div>
+        `;
       }
 
       updateCountdown();
-      setInterval(updateCountdown, 60000);
+      setInterval(updateCountdown, 1000); // Update every second for a real-time clock
     </script>
   </body>
 </html>
