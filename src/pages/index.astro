@@ -61,12 +61,132 @@
         border-radius: 8px;
         animation: pulse 2s infinite;
       }
+      .poll-section {
+        margin-top: 2rem;
+        text-align: center;
+        max-width: 600px;
+        width: 100%;
+      }
+      .poll-form {
+        margin-top: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        background: rgba(0, 0, 0, 0.2);
+        padding: 1.5rem;
+        border-radius: 16px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        animation: slideUp 1s ease-out;
+      }
+      .poll-form input, .poll-form textarea {
+        padding: 0.8rem;
+        border-radius: 12px;
+        border: none;
+        background: rgba(255, 255, 255, 0.15);
+        color: white;
+        font-size: 1rem;
+        transition: background 0.3s, box-shadow 0.3s;
+      }
+      .poll-form input:focus, .poll-form textarea:focus {
+        background: rgba(255, 255, 255, 0.25);
+        box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+        outline: none;
+      }
+      .poll-form button {
+        padding: 0.8rem 1.5rem;
+        background: linear-gradient(to right, var(--yellow), var(--red));
+        border: none;
+        border-radius: 12px;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+        transition: transform 0.3s, box-shadow 0.3s;
+        font-size: 1rem;
+      }
+      .poll-form button:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+      }
+      .poll-list {
+        margin-top: 1rem;
+        list-style: none;
+        padding: 0;
+      }
+      .poll-item {
+        margin: 1.5rem 0;
+        background: rgba(0, 0, 0, 0.15);
+        padding: 1.5rem;
+        border-radius: 16px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        animation: slideUp 0.8s ease-out;
+      }
+      .poll-item h3 {
+        font-size: 1.5rem;
+        color: var(--yellow); /* Bright yellow for a pop */
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4); /* Stronger shadow for depth */
+        margin-bottom: 1rem;
+        font-family: 'Courier New', monospace; /* Retro font for Beatles vibe */
+      }
+      .poll-options {
+        margin-top: 1rem;
+      }
+      .poll-option {
+        margin: 0.8rem 0;
+        padding: 0.8rem 1rem;
+        background: linear-gradient(to right, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.2)); /* Subtle gradient for options */
+        border-radius: 12px;
+        cursor: pointer;
+        transition: background 0.3s, transform 0.3s, box-shadow 0.3s;
+        font-size: 1.1rem;
+        color: #fff;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        position: relative;
+        overflow: hidden;
+      }
+      .poll-option::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0));
+        animation: shine 2s infinite;
+      }
+      @keyframes shine {
+        to { left: 100%; }
+      }
+      .poll-option:hover {
+        background: linear-gradient(to right, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.3));
+        transform: translateX(5px);
+        box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+      }
+      .poll-option button {
+        margin-left: 1rem;
+        padding: 0.5rem 1rem;
+        background: var(--blue);
+        border: none;
+        border-radius: 8px;
+        color: white;
+        cursor: pointer;
+        transition: background 0.3s, transform 0.3s;
+        font-size: 0.9rem;
+        font-weight: bold;
+      }
+      .poll-option button:hover {
+        background: #8a2be2; /* Darker purple for contrast */
+        transform: scale(1.1);
+      }
       @keyframes pulse {
         0% { transform: scale(1); }
         50% { transform: scale(1.05); }
         100% { transform: scale(1); }
       }
       @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes slideUp {
         from { opacity: 0; transform: translateY(20px); }
         to { opacity: 1; transform: translateY(0); }
       }
@@ -107,6 +227,18 @@
         <p>July 13—Wedding bells are ringing!</p>
         <div class="countdown-clock" id="countdown"></div>
       </section>
+
+      <!-- Poll Section -->
+      <section class="section poll-section">
+        <h2>Create a Group Poll</h2>
+        <p>Vote or suggest a poll for our chat—fun for all!</p>
+        <form id="pollForm" class="poll-form">
+          <input type="text" id="pollQuestion" placeholder="Poll Question (e.g., Best Beatles Song?)" required />
+          <textarea id="pollOptions" placeholder="Options (one per line, e.g., Hey Jude\nLet It Be)" required></textarea>
+          <button type="submit">Create Poll</button>
+        </form>
+        <ul id="pollList" class="poll-list"></ul>
+      </section>
     </main>
 
     <script>
@@ -137,6 +269,62 @@
 
       updateCountdown();
       setInterval(updateCountdown, 1000); // Update every second for a real-time clock
+
+      // Poll Functionality
+      const polls = JSON.parse(localStorage.getItem('polls')) || [];
+      const pollForm = document.getElementById('pollForm');
+      const pollList = document.getElementById('pollList');
+
+      function savePolls() {
+        localStorage.setItem('polls', JSON.stringify(polls));
+      }
+
+      function renderPolls() {
+        pollList.innerHTML = '';
+        polls.forEach((poll, index) => {
+          const pollItem = document.createElement('li');
+          pollItem.className = 'poll-item';
+          pollItem.innerHTML = `
+            <h3>${poll.question}</h3>
+            <div class="poll-options">
+              ${poll.options.map(option => `
+                <div class="poll-option" data-poll="${index}" data-option="${option}">
+                  ${option} (${poll.votes[option] || 0} votes)
+                  <button onclick="vote(${index}, '${option}')">Vote</button>
+                </div>
+              `).join('')}
+            </div>
+          `;
+          pollList.appendChild(pollItem);
+        });
+      }
+
+      function vote(pollIndex, option) {
+        polls[pollIndex].votes[option] = (polls[pollIndex].votes[option] || 0) + 1;
+        savePolls();
+        renderPolls();
+      }
+
+      pollForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const question = document.getElementById('pollQuestion').value;
+        const optionsInput = document.getElementById('pollOptions').value.split('\n').map(opt => opt.trim()).filter(opt => opt);
+        if (question && optionsInput.length >= 2) {
+          polls.push({
+            question,
+            options: optionsInput,
+            votes: {}
+          });
+          savePolls();
+          renderPolls();
+          pollForm.reset();
+        } else {
+          alert('Please enter a question and at least two options!');
+        }
+      });
+
+      // Initial render
+      renderPolls();
     </script>
   </body>
 </html>
